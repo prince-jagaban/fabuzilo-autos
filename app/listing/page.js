@@ -5,6 +5,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion } from 'framer-motion';
 import ClientLayout from '@/components/ClientLayout'; // ✅ layout wrapper
+import Image from "next/image";
+
 
 export default function ListingPage() {
   const [cars, setCars] = useState([]);
@@ -168,7 +170,7 @@ export default function ListingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <image
+                  <Image
                     src={car.image}
                     alt={car.title}
                     className="w-full h-48 object-cover"

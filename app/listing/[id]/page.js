@@ -7,6 +7,7 @@ import { db } from '@/lib/firebase';
 import ClientLayout from '@/components/ClientLayout';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from "next/image";
 
 export default function CarDetailsPage() {
   const { id } = useParams();
@@ -48,7 +49,7 @@ export default function CarDetailsPage() {
       </Link>
 
       {/* Car Image */}
-      <image
+      <Image
         src={car.image}
         alt={car.title || "Car Image"}
         className="w-full h-[300px] md:h-[400px] object-cover rounded-xl shadow mb-6"

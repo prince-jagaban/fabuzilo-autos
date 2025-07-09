@@ -345,7 +345,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.1 }}
           >
-            <image src={car.image} alt={car.title} className="rounded mb-3 w-full h-40 object-cover" />
+            <Image src={car.image} alt={car.title} className="rounded mb-3 w-full h-40 object-cover" />
             <div>
               <h3 className="text-lg font-bold text-gray-800">{car.title}</h3>
               <p className="text-red-600 font-semibold">{formatNaira(car.price)}</p>
