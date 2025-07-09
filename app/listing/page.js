@@ -168,7 +168,7 @@ export default function ListingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <img
+                  <image
                     src={car.image}
                     alt={car.title}
                     className="w-full h-48 object-cover"

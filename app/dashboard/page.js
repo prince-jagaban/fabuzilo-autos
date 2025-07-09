@@ -12,6 +12,8 @@ import {
 import { app, db } from '@/lib/firebase';
 import { saveAs } from 'file-saver';
 import { motion } from 'framer-motion';
+import Image from "next/image";
+
 
 export default function DashboardPage() {
   const auth = getAuth(app);
@@ -311,7 +313,7 @@ export default function DashboardPage() {
             className="w-full px-4 py-2 border rounded"
           />
           {preview && (
-            <img src={preview} alt="Preview" className="mt-2 w-full h-40 object-cover rounded" />
+            <image src={preview} alt="Preview" className="mt-2 w-full h-40 object-cover rounded" />
           )}
         </div>
 
@@ -343,7 +345,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.1 }}
           >
-            <img src={car.image} alt={car.title} className="rounded mb-3 w-full h-40 object-cover" />
+            <image src={car.image} alt={car.title} className="rounded mb-3 w-full h-40 object-cover" />
             <div>
               <h3 className="text-lg font-bold text-gray-800">{car.title}</h3>
               <p className="text-red-600 font-semibold">{formatNaira(car.price)}</p>

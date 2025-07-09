@@ -16,7 +16,7 @@ export default function BlogComingSoon() {
         >
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">🚧 Blog Coming Soon</h1>
           <p className="text-lg text-gray-600 mb-6">
-            We're working hard to bring you expert insights, car reviews, auto maintenance tips,
+            We&apos;re working hard to bring you expert insights, car reviews, auto maintenance tips,
             and the latest trends in the automotive world.
           </p>
           <Link

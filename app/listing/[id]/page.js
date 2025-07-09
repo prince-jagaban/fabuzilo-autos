@@ -48,7 +48,7 @@ export default function CarDetailsPage() {
       </Link>
 
       {/* Car Image */}
-      <img
+      <image
         src={car.image}
         alt={car.title || "Car Image"}
         className="w-full h-[300px] md:h-[400px] object-cover rounded-xl shadow mb-6"
