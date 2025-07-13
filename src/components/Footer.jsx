@@ -38,36 +38,19 @@ export default function Footer() {
         <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.3 }}>
           <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
           <ul className="space-y-2 text-sm text-gray-300">
-            <li>
-              <Link href="/" className="hover:text-red-500 hover:underline">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link href="/listing" className="hover:text-red-500 hover:underline">
-                Car Listings
-              </Link>
-            </li>
-            <li>
-              <Link href="/about" className="hover:text-red-500 hover:underline">
-                About
-              </Link>
-            </li>
-            <li>
-              <Link href="/blog" className="hover:text-red-500 hover:underline">
-                Blog
-              </Link>
-            </li>
-            <li>
-              <Link href="/login" className="hover:text-red-500 hover:underline">
-                Admin Login
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact" className="hover:text-red-500 hover:underline">
-                Contact
-              </Link>
-            </li>
+            {[
+              { href: '/', label: 'Home' },
+              { href: '/listing', label: 'Car Listings' },
+              { href: '/about', label: 'About' },
+              { href: '/blog', label: 'Blog' },
+              { href: '/contact', label: 'Contact' },
+            ].map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:text-red-500 hover:underline">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </motion.div>
 
@@ -85,46 +68,28 @@ export default function Footer() {
         <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.3 }}>
           <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
           <div className="flex flex-wrap gap-4 text-xl text-gray-300">
-            <motion.a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.3, color: '#1877F2' }}
-              transition={{ type: 'spring', stiffness: 400 }}
-            >
-              <FaFacebook />
-            </motion.a>
-            <motion.a
-              href="https://www.instagram.com/fabuziloautos?igsh=em9zc2N1Z3ZvYmFw"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.3, color: '#E4405F' }}
-              transition={{ type: 'spring', stiffness: 400 }}
-            >
-              <FaInstagram />
-            </motion.a>
-            <motion.a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.3, color: '#1DA1F2' }}
-              transition={{ type: 'spring', stiffness: 400 }}
-            >
-              <FaTwitter />
-            </motion.a>
-            <motion.a
-              href="https://wa.me/2348127355827"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.3, color: '#25D366' }}
-              transition={{ type: 'spring', stiffness: 400 }}
-            >
-              <FaWhatsapp />
-            </motion.a>
+            {[
+              { href: 'https://facebook.com', icon: <FaFacebook />, color: '#1877F2' },
+              { href: 'https://www.instagram.com/fabuziloautos?igsh=em9zc2N1Z3ZvYmFw', icon: <FaInstagram />, color: '#E4405F' },
+              { href: 'https://twitter.com', icon: <FaTwitter />, color: '#1DA1F2' },
+              { href: 'https://wa.me/2348127355827', icon: <FaWhatsapp />, color: '#25D366' },
+            ].map((item, index) => (
+              <motion.a
+                key={index}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.3, color: item.color }}
+                transition={{ type: 'spring', stiffness: 400 }}
+              >
+                {item.icon}
+              </motion.a>
+            ))}
           </div>
         </motion.div>
       </div>
 
+      {/* Copyright */}
       <div className="mt-10 border-t border-gray-700 pt-4 text-center text-sm text-gray-500">
         © {new Date().getFullYear()} FABUZILO. All rights reserved.
       </div>

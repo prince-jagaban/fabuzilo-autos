@@ -2,18 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import {
   addDoc, collection, getDocs, deleteDoc, doc, updateDoc,
 } from 'firebase/firestore';
 import {
   getStorage, ref, uploadBytes, getDownloadURL,
 } from 'firebase/storage';
+import { onAuthStateChanged, signOut, getAuth } from 'firebase/auth';
 import { app, db } from '@/lib/firebase';
 import { saveAs } from 'file-saver';
-import { motion } from 'framer-motion';
-import Image from "next/image";
-
+import Image from 'next/image';
 
 export default function DashboardPage() {
   const auth = getAuth(app);
@@ -22,42 +20,35 @@ export default function DashboardPage() {
   const carListRef = useRef(null);
 
   const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState('');
   const [cars, setCars] = useState([]);
-  const [editingCarId, setEditingCarId] = useState(null);
-  const [filterFuel, setFilterFuel] = useState('');
-  const [filterYear, setFilterYear] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const [car, setCar] = useState({
-    title: '', price: '', fuel: '', year: '', transmission: '', description: '',
-  });
+  const [car, setCar] = useState({ title: '', price: '', fuel: '', year: '', transmission: '', description: '' });
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [editingCarId, setEditingCarId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterFuel, setFilterFuel] = useState('');
+  const [filterYear, setFilterYear] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [message, setMessage] = useState('');
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) router.push('/login');
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) router.push('/login');
       else {
-        setUser(currentUser);
+        setUser(user);
         setAuthLoading(false);
       }
     });
     return () => unsubscribe();
-  }, [auth, router]);
+  }, []);
 
   useEffect(() => {
     const fetchCars = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, 'cars'));
-        const carsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setCars(carsData);
-      } catch (error) {
-        console.error('Error fetching cars:', error);
-      }
+      const snapshot = await getDocs(collection(db, 'cars'));
+      const carData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCars(carData);
     };
     if (user) fetchCars();
   }, [user]);
@@ -69,7 +60,6 @@ export default function DashboardPage() {
   const handleAddOrUpdateCar = async (e) => {
     e.preventDefault();
     setUploading(true);
-    setMessage('');
     try {
       let imageUrl = '';
       if (file) {
@@ -82,20 +72,18 @@ export default function DashboardPage() {
       if (editingCarId) {
         const carRef = doc(db, 'cars', editingCarId);
         await updateDoc(carRef, { ...car, ...(imageUrl && { image: imageUrl }) });
-        setCars((prev) =>
-          prev.map((c) => (c.id === editingCarId ? { ...c, ...car, image: imageUrl || c.image } : c))
-        );
-        setMessage('✅ Car updated successfully!');
+        setCars(prev => prev.map(c => c.id === editingCarId ? { ...c, ...car, image: imageUrl || c.image } : c));
+        setMessage('✅ Car updated!');
       } else {
         const docRef = await addDoc(collection(db, 'cars'), { ...car, image: imageUrl });
-        setCars((prev) => [...prev, { ...car, id: docRef.id, image: imageUrl }]);
-        setMessage('✅ Car added successfully!');
+        setCars(prev => [...prev, { ...car, id: docRef.id, image: imageUrl }]);
+        setMessage('✅ Car added!');
       }
 
       clearForm();
     } catch (err) {
-      console.error('Error submitting car:', err);
-      setMessage('❌ Failed to submit car.');
+      console.error(err);
+      setMessage('❌ Failed to submit.');
     } finally {
       setUploading(false);
     }
@@ -110,15 +98,9 @@ export default function DashboardPage() {
   };
 
   const handleDelete = async (carId) => {
-    if (!confirm('Are you sure you want to delete this car?')) return;
-    try {
-      await deleteDoc(doc(db, 'cars', carId));
-      setCars((prev) => prev.filter((car) => car.id !== carId));
-      alert('✅ Car deleted.');
-    } catch (err) {
-      console.error('Error deleting car:', err);
-      alert('❌ Failed to delete car.');
-    }
+    if (!confirm('Delete this car?')) return;
+    await deleteDoc(doc(db, 'cars', carId));
+    setCars(prev => prev.filter(car => car.id !== carId));
   };
 
   const handleLogout = async () => {
@@ -131,29 +113,18 @@ export default function DashboardPage() {
     carListRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const filteredCars = cars.filter(
-    (car) =>
-      (!filterFuel || car.fuel === filterFuel) &&
-      (!filterYear || car.year === filterYear)
-  );
-
-  const searchedCars = filteredCars.filter((car) =>
-    car.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCars = cars
+    .filter(car => (!filterFuel || car.fuel === filterFuel) && (!filterYear || car.year === filterYear))
+    .filter(car => car.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const carsPerPage = 8;
-  const indexOfLastCar = currentPage * carsPerPage;
-  const indexOfFirstCar = indexOfLastCar - carsPerPage;
-  const currentCars = searchedCars.slice(indexOfFirstCar, indexOfLastCar);
-  const totalPages = Math.ceil(searchedCars.length / carsPerPage);
+  const paginatedCars = filteredCars.slice((currentPage - 1) * carsPerPage, currentPage * carsPerPage);
+  const totalPages = Math.ceil(filteredCars.length / carsPerPage);
 
   const exportToCSV = () => {
-    const header = 'Title,Price,Fuel,Year,Transmission,Description\n';
-    const rows = cars.map(
-      (c) =>
-        `${c.title},${c.price},${c.fuel},${c.year},${c.transmission},${c.description?.replace(/\n/g, ' ')}`
-    ).join('\n');
-    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+    const headers = 'Title,Price,Fuel,Year,Transmission,Description\n';
+    const rows = cars.map(car => `${car.title},${car.price},${car.fuel},${car.year},${car.transmission},"${car.description?.replace(/\n/g, ' ')}"`).join('\n');
+    const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'fabuzilo_cars.csv');
   };
 
@@ -162,34 +133,32 @@ export default function DashboardPage() {
   if (authLoading) return <div className="p-10 text-center">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 md:p-12">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 text-black">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">FABUZILO Admin Dashboard</h1>
         <button onClick={handleLogout} className="text-red-600 hover:underline">Logout</button>
       </div>
 
-      {/* SEARCH BAR */}
-      <div className="flex gap-2 mb-6">
-        <input
-          type="text"
-          placeholder="Search cars by title"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border px-4 py-2 rounded w-full md:w-72"
-        />
-        <button
-          onClick={handleSearch}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Search
-        </button>
-      </div>
+      {/* Search & Filters */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+        <div className="flex gap-2 w-full sm:w-auto">
+          <input
+            type="text"
+            placeholder="Search by title"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-2 border rounded w-full sm:w-64 text-black"
+          />
+          <button
+            onClick={handleSearch}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Search
+          </button>
+        </div>
 
-      {/* FILTER BAR */}
-      <div className="mb-6 flex flex-col md:flex-row justify-between items-start gap-4">
-        <p className="text-gray-600 font-medium">🚗 Total Cars: {cars.length}</p>
-        <div className="flex gap-4 items-center">
-          <select value={filterFuel} onChange={(e) => setFilterFuel(e.target.value)} className="border px-3 py-2 rounded text-sm">
+        <div className="flex gap-3 items-center">
+          <select value={filterFuel} onChange={(e) => setFilterFuel(e.target.value)} className="px-3 py-2 border rounded text-black">
             <option value="">All Fuels</option>
             <option value="Petrol">Petrol</option>
             <option value="Diesel">Diesel</option>
@@ -201,171 +170,110 @@ export default function DashboardPage() {
             placeholder="Filter Year"
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value)}
-            className="border px-3 py-2 rounded text-sm"
+            className="px-3 py-2 border rounded text-black"
           />
-          <button onClick={exportToCSV} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">
+          {/*<button onClick={exportToCSV} className="bg-green-600 text-white px-4 py-2 rounded">
             Export CSV
-          </button>
+          </button>*/}
         </div>
       </div>
 
-      {/* FORM SECTION */}
-      <form
-        ref={formRef}
-        onSubmit={handleAddOrUpdateCar}
-        className="bg-white shadow p-6 rounded max-w-2xl mx-auto mb-12"
-      >
-        <h2 className="text-xl font-semibold mb-4">{editingCarId ? 'Edit Car' : 'Add New Car'}</h2>
-        {message && <div className="mb-4 text-sm text-blue-700 font-medium">{message}</div>}
+      {/* Form */}
+      <form onSubmit={handleAddOrUpdateCar} ref={formRef} className="bg-white p-6 rounded shadow max-w-3xl mx-auto mb-10">
+        <h2 className="text-xl font-bold mb-4">{editingCarId ? 'Edit Car' : 'Add New Car'}</h2>
+        {message && <p className="mb-4 text-blue-600">{message}</p>}
 
-        <div className="mb-4">
-          <label className="block text-sm text-gray-600 mb-1">Title</label>
-          <input
-            type="text"
-            name="title"
-            value={car.title}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded"
-          />
-        </div>
+        {['title', 'price', 'year', 'description'].map((field, idx) => (
+          <div key={idx} className="mb-4">
+            <label className="block text-sm mb-1 capitalize">{field}</label>
+            {field !== 'description' ? (
+              <input
+                type={field === 'price' || field === 'year' ? 'number' : 'text'}
+                name={field}
+                value={car[field]}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded text-black"
+              />
+            ) : (
+              <textarea
+                name="description"
+                value={car.description}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded text-black"
+              />
+            )}
+          </div>
+        ))}
 
-        <div className="mb-4">
-          <label className="block text-sm text-gray-600 mb-1">Price (₦)</label>
-          <input
-            type="number"
-            name="price"
-            value={car.price}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm text-gray-600 mb-1">Fuel</label>
-          <select
-            name="fuel"
-            value={car.fuel}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded"
-          >
-            <option value="">Select Fuel Type</option>
-            <option value="Petrol">Petrol</option>
-            <option value="Diesel">Diesel</option>
-            <option value="Electric">Electric</option>
-            <option value="Hybrid">Hybrid</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm text-gray-600 mb-1">Transmission</label>
-          <select
-            name="transmission"
-            value={car.transmission}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded"
-          >
-            <option value="">Select Transmission</option>
-            <option value="Automatic">Automatic</option>
-            <option value="Manual">Manual</option>
-            <option value="CVT">CVT</option>
-            <option value="Dual-Clutch">Dual-Clutch</option>
-            <option value="Tiptronic">Tiptronic</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm text-gray-600 mb-1">Year</label>
-          <input
-            type="number"
-            name="year"
-            value={car.year}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm text-gray-600 mb-1">Description</label>
-          <textarea
-            name="description"
-            value={car.description}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded"
-          />
-        </div>
+        {['fuel', 'transmission'].map((field, idx) => (
+          <div key={idx} className="mb-4">
+            <label className="block text-sm mb-1 capitalize">{field}</label>
+            <select
+              name={field}
+              value={car[field]}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded text-black"
+            >
+              <option value="">Select {field}</option>
+              {(field === 'fuel'
+                ? ['Petrol', 'Diesel', 'Electric', 'Hybrid']
+                : ['Automatic', 'Manual', 'CVT', 'Dual-Clutch', 'Tiptronic']
+              ).map((opt) => (
+                <option key={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+        ))}
 
         <div className="mb-6">
-          <label className="block text-sm text-gray-600 mb-1">Upload Image</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              setFile(file);
-              setPreview(file ? URL.createObjectURL(file) : null);
-            }}
-            className="w-full px-4 py-2 border rounded"
-          />
-          {preview && (
-            <image src={preview} alt="Preview" className="mt-2 w-full h-40 object-cover rounded" />
-          )}
-        </div>
+  <label className="block text-sm text-gray-700 dark:text-black-200 mb-1">Image</label>
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      const f = e.target.files[0];
+      setFile(f);
+      setPreview(f ? URL.createObjectURL(f) : null);
+    }}
+    className="w-full px-3 py-2 border border-gray-300 rounded text-black dark:text-white bg-white dark:bg-gray-800"
+  />
+  {preview && (
+    <img
+      src={preview}
+      alt="Preview"
+      className="mt-3 h-65 w-full object-cover rounded border border-gray-300"
+    />
+  )}
+</div>
+
 
         <div className="flex gap-4 mt-4">
           <button
             type="submit"
-            disabled={uploading}
-            className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition"
+            className="w-full bg-red-600 text-white py-2 rounded"
           >
-            {uploading ? 'Uploading...' : editingCarId ? 'Update Car' : 'Add Car'}
+            {uploading ? 'Uploading...' : editingCarId ? 'Update' : 'Add'}
           </button>
-          <button
-            type="button"
-            onClick={clearForm}
-            className="w-full bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition"
-          >
+          <button type="button" onClick={clearForm} className="w-full bg-gray-300 py-2 rounded">
             Clear
           </button>
         </div>
       </form>
 
       {/* CAR LIST */}
-      <div ref={carListRef} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {currentCars.map((car, index) => (
-          <motion.div
-            key={car.id}
-            className="bg-white p-4 rounded shadow flex flex-col justify-between"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.1 }}
-          >
-            <Image src={car.image} alt={car.title} className="rounded mb-3 w-full h-40 object-cover" />
-            <div>
-              <h3 className="text-lg font-bold text-gray-800">{car.title}</h3>
-              <p className="text-red-600 font-semibold">{formatNaira(car.price)}</p>
-              <p className="text-sm text-gray-600">
-                Year: {car.year} • Fuel: {car.fuel} • Transmission: {car.transmission}
-              </p>
-              <p className="text-sm text-gray-500 mt-2">{car.description?.slice(0, 80)}...</p>
-            </div>
-            <div className="flex gap-3 mt-4">
+      <div ref={carListRef} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {paginatedCars.map((car, idx) => (
+          <div key={car.id} className="bg-white p-4 rounded shadow">
+            <img src={car.image} className="w-full h-40 object-cover rounded mb-3" alt={car.title} />
+            <h3 className="font-semibold">{car.title}</h3>
+            <p className="text-red-600 font-bold">{formatNaira(car.price)}</p>
+            <p className="text-sm text-gray-600">{car.fuel} • {car.transmission} • {car.year}</p>
+            <p className="text-sm text-gray-500 mt-2">{car.description?.slice(0, 80)}...</p>
+            <div className="flex gap-2 mt-3">
               <button
                 onClick={() => {
-                  setCar({
-                    title: car.title,
-                    price: car.price,
-                    fuel: car.fuel,
-                    year: car.year,
-                    transmission: car.transmission,
-                    description: car.description,
-                  });
-                  setPreview(car.image || null);
+                  setCar({ ...car });
+                  setPreview(car.image);
                   setEditingCarId(car.id);
                   formRef.current?.scrollIntoView({ behavior: 'smooth' });
                 }}
@@ -375,23 +283,23 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={() => handleDelete(car.id)}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                className="bg-red-500 text-white px-3 py-1 rounded text-sm"
               >
                 Delete
               </button>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
-      {/* PAGINATION */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-8 gap-2">
-          {Array.from({ length: totalPages }, (_, i) => (
+        <div className="flex justify-center gap-2 mt-10">
+          {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded border ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}
+              className={`px-3 py-1 border rounded ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}
             >
               {i + 1}
             </button>

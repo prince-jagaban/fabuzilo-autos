@@ -26,14 +26,15 @@ const highlights = [
 export default function Highlights() {
   return (
     <div
-      className="relative py-20 px-6 md:px-20 text-white"
+      className="relative py-20 px-6 md:px-20 text-white min-h-[60vh]"
       style={{
         backgroundImage: "url('/assets/background5.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-0" />
+      {/* Dark overlay for better readability */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
 
       <div className="relative z-10">
         {/* Title */}
@@ -53,11 +54,11 @@ export default function Highlights() {
         </motion.div>
 
         {/* Highlight Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {highlights.map((item, index) => (
             <motion.div
               key={index}
-              className="bg-white/10 backdrop-blur-lg p-6 rounded-xl text-center shadow-xl border border-white/20"
+              className="bg-white/10 backdrop-blur-lg p-6 rounded-xl text-center shadow-xl border border-white/20 hover:scale-105 transition-transform"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

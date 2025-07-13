@@ -93,7 +93,7 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="rounded-lg overflow-hidden shadow">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3941.944680507599!2d7.495572674727287!3d9.054355688959353!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x104e754d308c8eb5%3A0xe887252489cbe29f!2sAbuja!5e0!3m2!1sen!2sng!4v1719990000000"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d302.9981358555659!2d7.4899981836289635!3d9.069443680825293!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x104e0b655ac1f3e7%3A0x10a4fb4912a126ec!2sHarrow%20Park!5e1!3m2!1sen!2sng!4v1752226364438!5m2!1sen!2sng"
                 width="100%"
                 height="300"
                 allowFullScreen=""
@@ -104,7 +104,7 @@ export default function ContactPage() {
 
             <div className="text-sm text-gray-700 space-y-2">
               <p>
-                <strong>📍 Address:</strong> Abuja, Nigeria
+                <strong>📍 Address:</strong> Off Ahmadu Bello Way, After Abia House, Wuse 2 Abuja, Nigeria
               </p>
               <p>
                 <strong>📞 Phone:</strong> +234 902 408 4975

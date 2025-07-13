@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion } from 'framer-motion';
-import ClientLayout from '@/components/ClientLayout'; // ✅ layout wrapper
-import Image from "next/image";
-
+import ClientLayout from '@/components/ClientLayout';
+import Image from 'next/image';
 
 export default function ListingPage() {
   const [cars, setCars] = useState([]);
@@ -30,12 +29,8 @@ export default function ListingPage() {
       setFilteredCars(carData);
 
       setFuelOptions([...new Set(carData.map((c) => c.fuel).filter(Boolean))]);
-      setYearOptions(
-        [...new Set(carData.map((c) => c.year).filter(Boolean))].sort((a, b) => b - a)
-      );
-      setTransmissionOptions([
-        ...new Set(carData.map((c) => c.transmission).filter(Boolean)),
-      ]);
+      setYearOptions([...new Set(carData.map((c) => c.year).filter(Boolean))].sort((a, b) => b - a));
+      setTransmissionOptions([...new Set(carData.map((c) => c.transmission).filter(Boolean))]);
     };
 
     fetchCars();
@@ -52,9 +47,7 @@ export default function ListingPage() {
 
       const matchesFuel = fuelFilter ? car.fuel === fuelFilter : true;
       const matchesYear = yearFilter ? car.year?.toString() === yearFilter : true;
-      const matchesTransmission = transmissionFilter
-        ? car.transmission === transmissionFilter
-        : true;
+      const matchesTransmission = transmissionFilter ? car.transmission === transmissionFilter : true;
 
       return matchesSearch && matchesFuel && matchesYear && matchesTransmission;
     });
@@ -95,52 +88,46 @@ export default function ListingPage() {
               placeholder="Search cars..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md text-black"
             />
 
             <select
               value={fuelFilter}
               onChange={(e) => setFuelFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md text-black"
             >
               <option value="">All Fuel Types</option>
               {fuelOptions.map((fuel) => (
-                <option key={fuel} value={fuel}>
-                  {fuel}
-                </option>
+                <option key={fuel} value={fuel}>{fuel}</option>
               ))}
             </select>
 
             <select
               value={yearFilter}
               onChange={(e) => setYearFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md text-black"
             >
               <option value="">All Years</option>
               {yearOptions.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
+                <option key={year} value={year}>{year}</option>
               ))}
             </select>
 
             <select
               value={transmissionFilter}
               onChange={(e) => setTransmissionFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md text-black"
             >
               <option value="">All Transmissions</option>
               {transmissionOptions.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
+                <option key={t} value={t}>{t}</option>
               ))}
             </select>
 
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md text-black"
             >
               <option value="">Sort By</option>
               <option value="priceAsc">Price: Low to High</option>
@@ -170,11 +157,17 @@ export default function ListingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Image
-                    src={car.image}
-                    alt={car.title}
-                    className="w-full h-48 object-cover"
-                  />
+                  {/* ✅ Fixed Image Rendering */}
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={car.image}
+                      alt={car.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
+
                   <div className="p-4">
                     <h3 className="text-lg font-semibold text-gray-800">{car.title}</h3>
                     <p className="text-red-600 font-bold">
